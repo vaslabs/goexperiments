@@ -31,15 +31,15 @@ func grayscale2blackandwhite(v float64) color.Color {
     }
 }
 
-
-func main() {
-    reader, err := os.Open("test.png")
-    img, err := png.Decode(reader)
-    if err != nil {
-        fmt.Printf("%s\n", err)
-    }
+func saveImage(fn string, bwImage image.Image) {
     
-    reader.Close()
+    toimg, _ := os.Create(fn)
+    defer toimg.Close()
+
+    png.Encode(toimg, bwImage)
+}
+
+func img2binary(img image.Image) image.Image {
     
     bounds := img.Bounds()
     bwImage := image.NewRGBA(image.Rect(0, 0, bounds.Max.Y, bounds.Max.X))
@@ -53,10 +53,21 @@ func main() {
             bwImage.Set(x,y, binaryColor)
         }
     }
-    
-    toimg, _ := os.Create("bwtest.png")
-    defer toimg.Close()
+    return bwImage
+}
 
-    png.Encode(toimg, bwImage)
+func main() {
+    file2convert := os.Args[1]
+    save2 := os.Args[2]
+    reader, err := os.Open(file2convert)
+    img, err := png.Decode(reader)
+    if err != nil {
+        fmt.Printf("%s\n", err)
+    }
+    
+    reader.Close()
+    
+    newImg := img2binary(img)
+    saveImage(save2, newImg)
     
 }
