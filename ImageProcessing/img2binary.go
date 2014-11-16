@@ -57,7 +57,7 @@ func convertImagePart(img image.Image, bwImage *image.RGBA, startX, endX, startY
 func img2binary(img image.Image) image.Image {
     var wg sync.WaitGroup
     bounds := img.Bounds()
-    bwImage := image.NewRGBA(image.Rect(0, 0, bounds.Max.Y, bounds.Max.X))
+    bwImage := image.NewRGBA(image.Rect(0, 0 ,bounds.Max.X, bounds.Max.Y))
     startY := 0
     endY := bounds.Max.Y / 2
     
