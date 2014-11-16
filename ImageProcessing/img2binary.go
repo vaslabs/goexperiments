@@ -4,6 +4,7 @@ import (
     "image/png"
     "image/color"
     "image"
+    "runtime"
     "os"
     "fmt"
     "math"
@@ -61,7 +62,7 @@ func img2binary(img image.Image) image.Image {
     startY := 0
     endY := bounds.Max.Y / 2
     
-    startYOther := endY + 1;
+    startYOther := endY;
     endYOther := bounds.Max.Y;
     
     wg.Add(2)
@@ -80,6 +81,8 @@ func img2binary(img image.Image) image.Image {
 }
 
 func main() {
+    fmt.Println("CPUs: ", runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
     file2convert := os.Args[1]
     save2 := os.Args[2]
     reader, err := os.Open(file2convert)
