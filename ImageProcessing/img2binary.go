@@ -1,12 +1,13 @@
 package main
 
 import (
- "image/png"
- "image/color"
- "image"
- "os"
- "fmt"
- "math"
+    "image/png"
+    "image/color"
+    "image"
+    "os"
+    "fmt"
+    "math"
+    "sync"
 )
 
 func rgbV2linear(v float64) float64 {
@@ -39,12 +40,9 @@ func saveImage(fn string, bwImage image.Image) {
     png.Encode(toimg, bwImage)
 }
 
-func img2binary(img image.Image) image.Image {
-    
-    bounds := img.Bounds()
-    bwImage := image.NewRGBA(image.Rect(0, 0, bounds.Max.Y, bounds.Max.X))
-    for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-        for x := bounds.Min.X; x < bounds.Max.X; x++ {
+func convertImagePart(img image.Image, bwImage *image.RGBA, startX, endX, startY, endY int) {
+    for y := startY; y < endY ; y++ {
+        for x := startX; x < endX; x++ {
             col := img.At(x, y)
             r,g,b,a := col.RGBA()
             _ = a
@@ -53,6 +51,31 @@ func img2binary(img image.Image) image.Image {
             bwImage.Set(x,y, binaryColor)
         }
     }
+}
+
+
+func img2binary(img image.Image) image.Image {
+    var wg sync.WaitGroup
+    bounds := img.Bounds()
+    bwImage := image.NewRGBA(image.Rect(0, 0, bounds.Max.Y, bounds.Max.X))
+    startY := 0
+    endY := bounds.Max.Y / 2
+    
+    startYOther := endY + 1;
+    endYOther := bounds.Max.Y;
+    
+    wg.Add(2)
+    
+    go func() {
+        defer wg.Done()
+        convertImagePart(img, bwImage, 0, bounds.Max.X, startY, endY)
+    }()
+    go func() {
+        defer wg.Done()
+        convertImagePart(img, bwImage, 0, bounds.Max.X, startYOther, endYOther)
+    }()
+    wg.Wait()
+    
     return bwImage
 }
 
